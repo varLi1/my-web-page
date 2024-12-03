@@ -1,11 +1,105 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>二维码显示</title>
+    <title>烟花爱心效果</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <h1>你好123</h1>  <!-- 页面显示内容 -->
+    <canvas id="fireworksCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const hearts = [];
+        const heartParticles = [];
+
+        // 绘制爱心
+        function drawHeart(x, y, size, color) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.bezierCurveTo(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
+            ctx.bezierCurveTo(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        // 粒子类
+        class Particle {
+            constructor(x, y, speed, direction, size, color) {
+                this.x = x;
+                this.y = y;
+                this.speed = speed;
+                this.direction = direction;
+                this.size = size;
+                this.color = color;
+                this.alpha = 1;
+            }
+
+            update() {
+                this.x += this.speed * Math.cos(this.direction);
+                this.y += this.speed * Math.sin(this.direction);
+                this.alpha -= 0.01; // 渐变消失
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // 创建爱心烟花效果
+        function createFirework(x, y, count, size, color) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2; // 随机角度
+                const speed = Math.random() * 5 + 2; // 随机速度
+                heartParticles.push(new Particle(x, y, speed, angle, size, color));
+            }
+        }
+
+        // 渲染动画
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制所有爱心粒子
+            for (let i = 0; i < heartParticles.length; i++) {
+                heartParticles[i].update();
+                heartParticles[i].draw();
+                // 删除消失的粒子
+                if (heartParticles[i].alpha <= 0) {
+                    heartParticles.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // 每隔一段时间触发烟花效果
+            if (Math.random() < 0.05) {
+                createFirework(Math.random() * canvas.width, Math.random() * canvas.height, 100, 5, 'red');
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // 初始化动画
+        animate();
+    </script>
 </body>
 </html>
